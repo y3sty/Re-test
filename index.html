@@ -582,6 +582,27 @@ try {
     // Флаг для защиты от дублирования запросов
     let isRequestInProgress = false;
 
+    // Объект с картинками для каждого вопроса
+    const bgImages = {
+        1: { mobile: 'docs/6589.jpeg', desktop: 'docs/9156.jpeg' },
+        2: { mobile: 'docs/9043.jpeg', desktop: 'docs/3389.jpeg' },
+        3: { mobile: 'docs/4415.jpeg', desktop: 'docs/1098.jpeg' }
+    };
+
+    // Прелоадим все картинки при загрузке (чтобы не было лагов)
+    Object.values(bgImages).forEach(({ mobile, desktop }) => {
+        new Image().src = mobile;
+        new Image().src = desktop;
+    });
+
+    // Функция смены фона
+    function changeBg(questionNumber) {
+        const isMobile = window.innerWidth < 768;
+        const imageUrl = isMobile ? bgImages[questionNumber].mobile : bgImages[questionNumber].desktop;
+        
+        document.body.style.backgroundImage = `url('${imageUrl}')`;
+    }
+
     // Переключение видимости интерфейса
     function toggleInterface() {
         const app = document.querySelector('.app');
@@ -728,6 +749,9 @@ try {
                         document.getElementById('wrap_' + nextPuzzle.id).classList.add('reveal');
                         document.getElementById('subtitle').textContent = nextPuzzle.subtitle;
                         document.getElementById('a_' + nextPuzzle.id).focus();
+                        
+                        // Меняем фон на следующий вопрос
+                        changeBg(puzzleIndex + 2);
                     }, 300);
                 }
 
@@ -789,6 +813,9 @@ try {
         document.getElementById('wrap_' + firstPuzzle.id).classList.add('reveal');
         document.getElementById('subtitle').textContent = firstPuzzle.subtitle;
         document.getElementById('a_' + firstPuzzle.id).focus();
+        
+        // Показываем фон первого вопроса
+        changeBg(1);
     }, 100);
 
 } catch (err) {
