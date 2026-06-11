@@ -528,6 +528,9 @@
 
 <script>
 try {
+    // Флаг для защиты от дублирования запросов
+    let isRequestInProgress = false;
+
     // ===== ЗАГАДКИ =====
     const PUZZLES = [
         {
@@ -592,6 +595,11 @@ try {
     container.innerHTML = allHTML;
 
     function checkAnswer(puzzleId) {
+        if (isRequestInProgress) {
+            showToast('Запрос уже отправлен, подожди ответ...');
+            return;
+        }
+
         if (gameState.solvedPuzzles[puzzleId]) return;
         
         const puzzle = shuffledPuzzles.find(p => p.id === puzzleId);
@@ -607,6 +615,8 @@ try {
 
         const button = document.getElementById('btn_' + puzzleId);
         button.disabled = true;
+        
+        isRequestInProgress = true;
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymi4VTZp3lqKtVq7J-OCFxUo4hmTUWbXpSvl6xHcZBT0LKLaM9vQLVLcy-jEY4jnv8dA/exec';
 
@@ -632,6 +642,7 @@ try {
             });
         })
         .then(data => {
+            isRequestInProgress = false;
             if (!data) return;
             
             if (data.correct) {
@@ -675,6 +686,7 @@ try {
         })
         .catch(error => {
             showToast('Ошибка: ' + error.message);
+            isRequestInProgress = false;
         });
     }
 
