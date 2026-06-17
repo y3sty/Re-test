@@ -223,8 +223,14 @@
             position: relative;
             z-index: 1;
             word-spacing: normal;
+            cursor: default;
         }
-        
+
+        /* Когда все загадки решены - просто меняем курсор */
+        .header h1.clickable {
+            cursor: pointer;
+        }
+
         .header h1 span {
             display: block;
             font-size: 1.4rem;
@@ -548,6 +554,8 @@
             .header h1 span { font-size: 1.2rem; }
             .row { flex-direction: column; }
             .row button { width: 100%; }
+            .modal-content { padding: 1.5rem; }
+            .modal-header h2 { font-size: 1.4rem; }
         }
 
         /* ПК версия - увеличение карточек */
@@ -606,14 +614,15 @@
 <button id="toggleBtn" class="toggle-interface-btn" onclick="toggleInterface()" title="Показать/Скрыть интерфейс">👁️</button>
 
 <div class="app">
-    <div class="code-strip">
+    <div class="code-strip" id="codeStrip">
         <div class="code-digit" id="code1"></div>
         <div class="code-digit" id="code2"></div>
         <div class="code-digit" id="code3"></div>
+        <!-- Коды для puzzle4 появятся здесь -->
     </div>
 
     <div class="header">
-        <h1>Три загадки</h1>
+        <h1 id="mainTitle">Три загадки</h1>
         <p class="sub" id="subtitle"></p>
     </div>
 
@@ -670,6 +679,11 @@ try {
             id: 'puzzle3',
             text: '..--- ..--- -....- ...-- ...-- -....- ..--- ..--- / .---- ----. -....- ...-- ...-- -....- ..--- ..... -....- ..... -....- ...-- .---- -....- ...-- ...-- -....- .---- ..... -....- ....- / .---- --... -....- ..--- ---.. -....- .---- -.... -....- ...-- .---- -....- ...-- ...-- -....- .---- / ..--- .---- -....- ..--- ---.. -....- .---- ....- -....- .---- ----. -....- .---- -....- .---- / ..--- ..--- -....- .---- ---.. -....- ..--- .---- -....- .---- ---.. -....- ..--- ----. -....- ...-- ...-- --..-- / ..--- ..--- -....- .---- ---.. -....- .---- ....- -....- .---- ---.. -....- .---- -.... -....- .---- ...-- -....- ..--- / ...-- .---- -....- ..... -....- .---- --... -....- .---- ...-- -....- .---- ..... -....- .---- ....- -....- ..--- ....- -....- ..--- .---- -....- ..--- ....- / ...-- .---- / .---- --... -....- .---- -.... -....- .---- ---.. -....- ---.. -....- ..--- .---- -....- .---- ---.. -....- ..--- ----- / ...-- ----- -....- .---- ---.. -....- ..--- ----. -....- .---- ...-- ..--..', 
             subtitle: 'Числа подскажут буквы, а конец подскажет начало',
+        },
+        {
+            id: 'puzzle4',
+            text: 'Какое слово было спрятано?',
+            subtitle: 'найди все буквы на протяжении всех загадок',
         }
     ];
 
@@ -677,7 +691,8 @@ try {
 
     const gameState = {
         solvedCount: 0,
-        solvedPuzzles: {}
+        solvedPuzzles: {},
+        puzzle4Code: null  // Код из puzzle4
     };
 
     for (let i = 0; i < shuffledPuzzles.length; i++) {
@@ -712,6 +727,7 @@ try {
 
     const container = document.getElementById('puzzlesContainer');
     let allHTML = '';
+    // Создаем все 4 загадки
     for (let i = 0; i < shuffledPuzzles.length; i++) {
         allHTML += createPuzzleHTML(shuffledPuzzles[i], i);
     }
@@ -778,6 +794,7 @@ try {
             if (data.correct) {
                 gameState.solvedPuzzles[puzzleId] = true;
                 gameState.solvedCount++;
+                gameState.finalCodes.push(data.code); // Сохраняем код
                 input.disabled = true;
 
                 const card = document.getElementById('card_' + puzzleId);
@@ -788,15 +805,30 @@ try {
 
                 const puzzleIndex = shuffledPuzzles.findIndex(p => p.id === puzzleId);
                 if (puzzleIndex < shuffledPuzzles.length - 1) {
-                    const nextPuzzle = shuffledPuzzles[puzzleIndex + 1];
+                    // Если это не последняя загадка
+                    if (puzzleId !== 'puzzle3') {
+                        // Для puzzle1 и puzzle2 открываем следующую автоматически
+                        const nextPuzzle = shuffledPuzzles[puzzleIndex + 1];
+                        setTimeout(function() {
+                            document.getElementById('lock_' + nextPuzzle.id).style.display = 'none';
+                            document.getElementById('wrap_' + nextPuzzle.id).classList.add('reveal');
+                            document.getElementById('subtitle').textContent = nextPuzzle.subtitle;
+                            document.getElementById('a_' + nextPuzzle.id).focus();
+                            
+                            // Меняем фон только для загадок 1, 2
+                            if (puzzleIndex < 2) {
+                                changeBg(puzzleIndex + 2);
+                            }
+                        }, 300);
+                    } else {
+                        // Если решена puzzle3 - делаем заголовок кликабельным
+                        const title = document.getElementById('mainTitle');
+                        title.classList.add('clickable');
+                    }
+                } else if (puzzleId === 'puzzle4') {
+                    // PUZZLE4 РЕШЕНА! Показываем 6 цифр
                     setTimeout(function() {
-                        document.getElementById('lock_' + nextPuzzle.id).style.display = 'none';
-                        document.getElementById('wrap_' + nextPuzzle.id).classList.add('reveal');
-                        document.getElementById('subtitle').textContent = nextPuzzle.subtitle;
-                        document.getElementById('a_' + nextPuzzle.id).focus();
-                        
-                        // Меняем фон на следующий вопрос
-                        changeBg(puzzleIndex + 2);
+                        revealSixDigits(data.code);
                     }, 300);
                 }
 
@@ -823,6 +855,30 @@ try {
         });
     }
 
+    // ===== PUZZLE 4 =====
+    function revealSixDigits(code) {
+        const codeStr = code.toString().padStart(6, '0');
+        const codeStrip = document.getElementById('codeStrip');
+        
+        // Очищаем старые элементы (коды 1, 2, 3)
+        codeStrip.innerHTML = '';
+        
+        // Создаем 6 новых элементов для каждой цифры
+        for (let i = 0; i < 6; i++) {
+            const digit = document.createElement('div');
+            digit.className = 'code-digit';
+            digit.id = 'code-puzzle4-' + (i + 1);
+            digit.textContent = codeStr[i];
+            codeStrip.appendChild(digit);
+            
+            // Анимированное появление
+            setTimeout(function() {
+                digit.classList.add('revealed');
+            }, i * 150);
+        }
+    }
+
+
     function revealDigit(pos, text) {
         setTimeout(function() {
             const el = document.getElementById('code' + pos);
@@ -846,10 +902,29 @@ try {
 
     document.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter') return;
+        
+        // Проверяем загадки
         const f = document.activeElement;
         if (f.id && f.id.startsWith('a_')) {
             const puzzleId = f.id.substring(2);
             checkAnswer(puzzleId);
+        }
+    });
+
+    // Обработчик клика на заголовок когда все 3 загадки решены
+    document.getElementById('mainTitle').addEventListener('click', function() {
+        if (this.classList.contains('clickable')) {
+            // Открываем puzzle4
+            const lock4 = document.getElementById('lock_puzzle4');
+            const wrap4 = document.getElementById('wrap_puzzle4');
+            if (lock4) lock4.style.display = 'none';
+            if (wrap4) {
+                wrap4.classList.add('reveal');
+                document.getElementById('subtitle').textContent = PUZZLES.find(p => p.id === 'puzzle4').subtitle;
+                document.getElementById('a_puzzle4').focus();
+            }
+            // Удаляем класс, чтобы можно было кликнуть только один раз
+            this.classList.remove('clickable');
         }
     });
 
