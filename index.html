@@ -774,15 +774,20 @@ try {
             })
         })
         .then(response => {
+            console.log('Response status:', response.status);
             if (!response.ok) {
-                showToast('Ошибка: ERR_HTTP_' + response.status);
+                showToast('Ошибка: HTTP ' + response.status);
+                button.disabled = false;
                 return null;
             }
             return response.text().then(text => {
+                console.log('Response text:', text);
                 try {
                     return JSON.parse(text);
                 } catch (e) {
-                    showToast('Ошибка: ERR_PARSE');
+                    console.error('JSON parse error:', e);
+                    showToast('Ошибка парсинга: ' + e.message);
+                    button.disabled = false;
                     return null;
                 }
             });
@@ -794,7 +799,6 @@ try {
             if (data.correct) {
                 gameState.solvedPuzzles[puzzleId] = true;
                 gameState.solvedCount++;
-                gameState.finalCodes.push(data.code); // Сохраняем код
                 input.disabled = true;
 
                 const card = document.getElementById('card_' + puzzleId);
@@ -850,8 +854,10 @@ try {
             }
         })
         .catch(error => {
-            showToast('Ошибка: ' + error.message);
+            console.error('Fetch error:', error);
+            showToast('Ошибка подключения: ' + error.message);
             isRequestInProgress = false;
+            button.disabled = false;
         });
     }
 
