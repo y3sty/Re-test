@@ -741,23 +741,37 @@ try {
         return best.key;
     }
 
-    // Прелоадим все картинки при загрузке, чтобы не было лагов
-    Object.values(bgImages).forEach((variants) => {
-        Object.values(variants).forEach((src) => {
-            new Image().src = src;
-        });
-    });
+    const preloadedImages = new Set();
+
+    function preloadImage(src) {
+        if (!src || preloadedImages.has(src)) return;
+        preloadedImages.add(src);
+        const img = new Image();
+        img.src = src;
+    }
+
+    function getBgUrl(questionNumber, aspectSlot) {
+        const puzzleImages = bgImages[questionNumber] || {};
+        return puzzleImages[aspectSlot] || puzzleImages.ratio169 || Object.values(puzzleImages)[0] || '';
+    }
+
+    function preloadUpcomingPuzzles(aspectSlot, startFrom) {
+        for (let i = startFrom; i <= shuffledPuzzles.length; i++) {
+            preloadImage(getBgUrl(i, aspectSlot));
+        }
+    }
 
     // Функция смены фона
     function changeBg(questionNumber) {
         const aspectSlot = getAspectSlot();
-        const puzzleImages = bgImages[questionNumber] || {};
-        const imageUrl = puzzleImages[aspectSlot] || puzzleImages.ratio169 || Object.values(puzzleImages)[0];
+        const imageUrl = getBgUrl(questionNumber, aspectSlot);
         
         const bgFixed = document.querySelector('.bg-fixed');
         if (bgFixed) {
             bgFixed.style.backgroundImage = `url('${imageUrl}')`;
         }
+
+        preloadUpcomingPuzzles(aspectSlot, questionNumber + 1);
     }
 
     function transitionToNextPuzzle(currentPuzzleId, nextPuzzle, subtitleText, bgIndex) {
