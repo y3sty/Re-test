@@ -717,20 +717,9 @@ try {
     };
 
     function getAspectSlot() {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const ratio = width / height;
-
-        // Если экран узкий и высокий, сначала считаем его телефонным форматом.
-        if (width < height && ratio < 0.78) {
-            return 'ratio1959';
-        }
-
-        // Если экран широкий, но всё ещё похож на планшет в горизонтали,
-        // отдаём приоритет 4:3, чтобы он не уходил в 16:9.
-        if (width > height && ratio < 1.5) {
-            return 'ratio43';
-        }
+        const screenWidth = window.screen && window.screen.width ? window.screen.width : window.innerWidth;
+        const screenHeight = window.screen && window.screen.height ? window.screen.height : window.innerHeight;
+        const ratio = screenWidth / screenHeight;
 
         const targets = [
             { key: 'ratio34', value: 3 / 4 },
