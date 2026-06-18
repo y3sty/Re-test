@@ -680,33 +680,47 @@ try {
     // Замени заглушки на свои реальные пути к файлам.
     const bgImages = {
         1: {
-            ratio34: 'docs2/34A.png',
-            ratio43: 'docs2/43A.png',
-            ratio169: 'docs2/169A.png',
-            ratio1959: 'docs2/1959A.png'
+            ratio34: 'docs/puzzle1-3x4.png',
+            ratio43: 'docs/puzzle1-4x3.png',
+            ratio169: 'docs/puzzle1-16x9.png',
+            ratio1959: 'docs/puzzle1-19_5x9.png'
         },
         2: {
-            ratio34: 'docs2/34B.png',
-            ratio43: 'docs2/43B.png',
-            ratio169: 'docs2/169B.png',
-            ratio1959: 'docs2/1959B.png'
+            ratio34: 'docs/puzzle2-3x4.png',
+            ratio43: 'docs/puzzle2-4x3.png',
+            ratio169: 'docs/puzzle2-16x9.png',
+            ratio1959: 'docs/puzzle2-19_5x9.png'
         },
         3: {
-            ratio34: 'docs2/34C.png',
-            ratio43: 'docs2/43C.png',
-            ratio169: 'docs2/169C.png',
-            ratio1959: 'docs2/1959C.png'
+            ratio34: 'docs/puzzle3-3x4.png',
+            ratio43: 'docs/puzzle3-4x3.png',
+            ratio169: 'docs/puzzle3-16x9.png',
+            ratio1959: 'docs/puzzle3-19_5x9.png'
         },
         4: {
-            ratio34: 'docs2/34D.png',
-            ratio43: 'docs2/43D.png',
-            ratio169: 'docs2/169D.png',
-            ratio1959: 'docs2/1959D.png'
+            ratio34: 'docs/puzzle4-3x4.png',
+            ratio43: 'docs/puzzle4-4x3.png',
+            ratio169: 'docs/puzzle4-16x9.png',
+            ratio1959: 'docs/puzzle4-19_5x9.png'
         }
     };
 
     function getAspectSlot() {
-        const ratio = window.innerWidth / window.innerHeight;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const ratio = width / height;
+
+        // Если экран узкий и высокий, сначала считаем его телефонным форматом.
+        if (width < height && ratio < 0.62) {
+            return 'ratio1959';
+        }
+
+        // Если экран широкий, но всё ещё похож на планшет в горизонтали,
+        // отдаём приоритет 4:3, чтобы он не уходил в 16:9.
+        if (width > height && ratio < 1.5) {
+            return 'ratio43';
+        }
+
         const targets = [
             { key: 'ratio34', value: 3 / 4 },
             { key: 'ratio43', value: 4 / 3 },
