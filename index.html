@@ -22,6 +22,7 @@
             align-items: center;
             justify-content: center;
             overflow-x: hidden;
+            overflow-y: scroll;
             -webkit-font-smoothing: antialiased;
             cursor: default;
         }
@@ -31,9 +32,9 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-size: cover;
+            right: 0;
+            bottom: 0;
+            background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -659,8 +660,8 @@ try {
     // Объект с картинками для каждого вопроса
     const bgImages = {
         1: { mobile: 'docs/IMG_9433.png', desktop: 'docs/IMG_9423A.png' },
-        2: { mobile: 'docs/IMG_9433B.png', desktop: 'docs/IMG_9423B.jpg' },
-        3: { mobile: 'docs/IMG_9433C.png', desktop: 'docs/IMG_9423C.jpg' },
+        2: { mobile: 'docs/IMG_9433B.png', desktop: 'docs/IMG_9423B.png' },
+        3: { mobile: 'docs/IMG_9433C.png', desktop: 'docs/IMG_9423C.png' },
         4: { mobile: 'docs/IMG_9433D.png', desktop: 'docs/IMG_9423D.png' }
     };
 
