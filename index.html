@@ -489,7 +489,25 @@
             animation: stepIn 0.5s ease forwards;
         }
 
+        .step-hidden.exit {
+            display: block;
+            animation: stepOut 0.45s ease forwards;
+        }
+
         @keyframes stepIn { to { opacity: 1; transform: translateY(0); } }
+        @keyframes stepOut {
+            from { opacity: 1; transform: translateY(0); max-height: 2000px; }
+            to { opacity: 0; transform: translateY(-12px); max-height: 0; }
+        }
+
+        .question-enter {
+            animation: questionEnter 0.45s ease forwards;
+        }
+
+        @keyframes questionEnter {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .lock-box {
             display: flex; 
@@ -682,6 +700,43 @@ try {
         }
     }
 
+    function transitionToNextPuzzle(currentPuzzleId, nextPuzzle, subtitleText, bgIndex) {
+        const currentWrap = document.getElementById('wrap_' + currentPuzzleId);
+        const nextWrap = document.getElementById('wrap_' + nextPuzzle.id);
+        const nextLock = document.getElementById('lock_' + nextPuzzle.id);
+        const nextInput = document.getElementById('a_' + nextPuzzle.id);
+
+        if (currentWrap) {
+            currentWrap.classList.add('exit');
+        }
+
+        setTimeout(function() {
+            if (currentWrap) {
+                currentWrap.style.display = 'none';
+            }
+
+            if (nextLock) {
+                nextLock.style.display = 'none';
+            }
+
+            if (nextWrap) {
+                nextWrap.classList.remove('step-hidden');
+                nextWrap.style.display = 'block';
+                nextWrap.classList.add('reveal', 'question-enter');
+            }
+
+            document.getElementById('subtitle').textContent = subtitleText;
+
+            if (nextInput) {
+                nextInput.focus();
+            }
+
+            if (typeof bgIndex === 'number') {
+                changeBg(bgIndex);
+            }
+        }, 420);
+    }
+
     // Переключение видимости интерфейса
     function toggleInterface() {
         const app = document.querySelector('.app');
@@ -838,17 +893,12 @@ try {
                     if (puzzleId !== 'puzzle3') {
                         // Для puzzle1 и puzzle2 открываем следующую автоматически
                         const nextPuzzle = shuffledPuzzles[puzzleIndex + 1];
-                        setTimeout(function() {
-                            document.getElementById('lock_' + nextPuzzle.id).style.display = 'none';
-                            document.getElementById('wrap_' + nextPuzzle.id).classList.add('reveal');
-                            document.getElementById('subtitle').textContent = nextPuzzle.subtitle;
-                            document.getElementById('a_' + nextPuzzle.id).focus();
-                            
-                            // Меняем фон только для загадок 1, 2
-                            if (puzzleIndex < 2) {
-                                changeBg(puzzleIndex + 2);
-                            }
-                        }, 300);
+                        transitionToNextPuzzle(
+                            puzzleId,
+                            nextPuzzle,
+                            nextPuzzle.subtitle,
+                            puzzleIndex < 2 ? puzzleIndex + 2 : undefined
+                        );
                     } else {
                         // Если решена puzzle3 - делаем заголовок кликабельным и добавляем анимацию
                         const title = document.getElementById('mainTitle');
