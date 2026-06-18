@@ -675,24 +675,71 @@ try {
     // Флаг для защиты от дублирования запросов
     let isRequestInProgress = false;
 
-    // Объект с картинками для каждого вопроса
+    // Объект с картинками для каждого вопроса.
+    // Для каждой загадки есть 3 версии: 4:3, 16:9 и 19.5:9.
+    // Замени заглушки на свои реальные пути к файлам.
     const bgImages = {
-        1: { mobile: 'docs/IMG_9433.png', desktop: 'docs/IMG_9423A.png' },
-        2: { mobile: 'docs/IMG_9433B.png', desktop: 'docs/IMG_9423B.png' },
-        3: { mobile: 'docs/IMG_9433C.png', desktop: 'docs/IMG_9423C.png' },
-        4: { mobile: 'docs/IMG_9433D.png', desktop: 'docs/IMG_9423D.png' }
+        1: {
+            ratio34: 'docs/34A.png',
+            ratio43: 'docs/43A.png',
+            ratio169: '169A.jpg',
+            ratio1959: 'docs/1959A.jpg'
+        },
+        2: {
+            ratio34: 'docs/34B.png',
+            ratio43: 'docs/43B.png',
+            ratio169: '169B.jpg',
+            ratio1959: 'docs/1959B.jpg'
+        },
+        3: {
+            ratio34: 'docs/34C.png',
+            ratio43: 'docs/43C.png',
+            ratio169: 'docs/169C.jpg',
+            ratio1959: 'docs/1959C.jpg'
+        },
+        4: {
+            ratio34: 'docs/34D.png',
+            ratio43: 'docs/43D.png',
+            ratio169: 'docs/169D.jpg',
+            ratio1959: 'docs/1959D.jpg'
+        }
     };
 
-    // Прелоадим все картинки при загрузке (чтобы не было лагов)
-    Object.values(bgImages).forEach(({ mobile, desktop }) => {
-        new Image().src = mobile;
-        new Image().src = desktop;
+    function getAspectSlot() {
+        const ratio = window.innerWidth / window.innerHeight;
+        const targets = [
+            { key: 'ratio34', value: 3 / 4 },
+            { key: 'ratio43', value: 4 / 3 },
+            { key: 'ratio169', value: 16 / 9 },
+            { key: 'ratio1959', value: 19.5 / 9 }
+        ];
+
+        let best = targets[0];
+        let bestDiff = Math.abs(ratio - best.value);
+
+        for (let i = 1; i < targets.length; i++) {
+            const diff = Math.abs(ratio - targets[i].value);
+            if (diff < bestDiff) {
+                best = targets[i];
+                bestDiff = diff;
+            }
+        }
+
+        return best.key;
+    }
+
+    // Прелоадим все картинки при загрузке, чтобы не было лагов
+    Object.values(bgImages).forEach((variants) => {
+        Object.values(variants).forEach((src) => {
+            new Image().src = src;
+        });
     });
 
     // Функция смены фона
     function changeBg(questionNumber) {
-        const isMobile = window.innerWidth < 768;
-        const imageUrl = isMobile ? bgImages[questionNumber].mobile : bgImages[questionNumber].desktop;
+        const aspectSlot = getAspectSlot();
+        const puzzleImages = bgImages[questionNumber] || {};
+        const imageUrl = puzzleImages[aspectSlot] || puzzleImages.ratio169 || Object.values(puzzleImages)[0];
         
         const bgFixed = document.querySelector('.bg-fixed');
         if (bgFixed) {
