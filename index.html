@@ -28,30 +28,30 @@
         }
 
         /* Фиксированный фоновый слой */
+        .bg-blur,
         .bg-fixed {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-size: cover;
-            background-position: top center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            z-index: -1;
         }
 
-        .bg-fixed::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(circle at top center, rgba(255, 235, 205, 0.16), rgba(255, 255, 255, 0.06) 35%, rgba(255, 255, 255, 0) 70%),
-                linear-gradient(180deg, rgba(255, 248, 240, 0.18), rgba(255, 244, 228, 0.1));
-            filter: blur(6px);
-            transform: scale(1.02);
-            z-index: -1;
-            pointer-events: none;
+        .bg-blur {
+            background-size: cover;
+            background-position: top center;
+            filter: blur(18px);
+            transform: scale(1.08);
+            opacity: 0.9;
+            z-index: -3;
+        }
+
+        .bg-fixed {
+            background-size: cover;
+            background-position: top center;
+            z-index: -2;
         }
 
         /* Эффект жары */
@@ -657,13 +657,12 @@
     <p>⚠️ JavaScript отключен. Пожалуйста, включите JavaScript для работы сайта.</p>
 </noscript>
 
+<div class="bg-blur" id="bgBlur" style="background-image: url('docs/beach-mobile.jpeg');"></div>
+<div class="bg-fixed" id="bgFixed" style="background-image: url('docs/beach-mobile.jpeg');"></div>
 <div class="heatWave"></div>
 <div class="grain"></div>
 
 <button id="toggleBtn" class="toggle-interface-btn" onclick="toggleInterface()" title="Показать/Скрыть интерфейс">👁️</button>
-
-<!-- Фиксированный фоновый слой -->
-<div class="bg-fixed" style="background-image: url('docs/beach-mobile.jpeg');"></div>
 
 <div class="app">
     <div class="code-strip" id="codeStrip">
@@ -779,9 +778,13 @@ try {
         const aspectSlot = getAspectSlot();
         const imageUrl = getBgUrl(questionNumber, aspectSlot);
         
-        const bgFixed = document.querySelector('.bg-fixed');
+        const bgFixed = document.getElementById('bgFixed');
+        const bgBlur = document.getElementById('bgBlur');
         if (bgFixed) {
             bgFixed.style.backgroundImage = `url('${imageUrl}')`;
+        }
+        if (bgBlur) {
+            bgBlur.style.backgroundImage = `url('${imageUrl}')`;
         }
 
         preloadUpcomingPuzzles(aspectSlot, questionNumber + 1);
