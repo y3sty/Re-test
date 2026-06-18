@@ -24,24 +24,20 @@
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             cursor: default;
-            background-attachment: fixed;
+        }
+
+        /* Фиксированный фоновый слой */
+        .bg-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-        }
-
-        /* Мобильная версия */
-        @media (max-width: 768px) {
-            body {
-                background-image: url('docs/beach-mobile.jpeg');
-            }
-        }
-
-        /* Десктопная версия */
-        @media (min-width: 769px) {
-            body {
-                background-image: url('docs/beach-desktop.jpeg');
-            }
+            background-attachment: fixed;
+            z-index: -1;
         }
 
         /* Эффект жары */
@@ -634,6 +630,9 @@
 
 <button id="toggleBtn" class="toggle-interface-btn" onclick="toggleInterface()" title="Показать/Скрыть интерфейс">👁️</button>
 
+<!-- Фиксированный фоновый слой -->
+<div class="bg-fixed" style="background-image: url('docs/beach-mobile.jpeg');"></div>
+
 <div class="app">
     <div class="code-strip" id="codeStrip">
         <div class="code-digit" id="code1"></div>
@@ -660,8 +659,8 @@ try {
     // Объект с картинками для каждого вопроса
     const bgImages = {
         1: { mobile: 'docs/IMG_9433.png', desktop: 'docs/IMG_9423A.png' },
-        2: { mobile: 'docs/IMG_9433B.png', desktop: 'docs/IMG_9423B.png' },
-        3: { mobile: 'docs/IMG_9433C.png', desktop: 'docs/IMG_9423C.png' },
+        2: { mobile: 'docs/IMG_9433B.png', desktop: 'docs/IMG_9423B.jpg' },
+        3: { mobile: 'docs/IMG_9433C.png', desktop: 'docs/IMG_9423C.jpg' },
         4: { mobile: 'docs/IMG_9433D.png', desktop: 'docs/IMG_9423D.png' }
     };
 
@@ -676,7 +675,10 @@ try {
         const isMobile = window.innerWidth < 768;
         const imageUrl = isMobile ? bgImages[questionNumber].mobile : bgImages[questionNumber].desktop;
         
-        document.body.style.backgroundImage = `url('${imageUrl}')`;
+        const bgFixed = document.querySelector('.bg-fixed');
+        if (bgFixed) {
+            bgFixed.style.backgroundImage = `url('${imageUrl}')`;
+        }
     }
 
     // Переключение видимости интерфейса
