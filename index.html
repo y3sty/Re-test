@@ -1032,9 +1032,14 @@ try {
     function revealSixDigits(code) {
         const codeStr = code.toString().padStart(6, '0');
         const codeStrip = document.getElementById('codeStrip');
+        const toggleBtn = document.getElementById('toggleBtn');
         
         // Очищаем старые элементы (коды 1, 2, 3)
         codeStrip.innerHTML = '';
+
+        if (toggleBtn) {
+            toggleBtn.style.display = 'none';
+        }
         
         // Создаем 6 новых элементов для каждой цифры
         for (let i = 0; i < 6; i++) {
