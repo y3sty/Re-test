@@ -721,6 +721,10 @@ try {
         const screenHeight = window.screen && window.screen.height ? window.screen.height : window.innerHeight;
         const ratio = screenWidth / screenHeight;
 
+        if (screenHeight > screenWidth && ratio < 0.8) {
+            return 'ratio1959';
+        }
+
         const targets = [
             { key: 'ratio34', value: 3 / 4 },
             { key: 'ratio43', value: 4 / 3 },
@@ -741,6 +745,8 @@ try {
 
         return best.key;
     }
+
+    const chosenAspectSlot = getAspectSlot();
 
     const preloadedImages = new Set();
 
@@ -764,8 +770,7 @@ try {
 
     // Функция смены фона
     function changeBg(questionNumber) {
-        const aspectSlot = getAspectSlot();
-        const imageUrl = getBgUrl(questionNumber, aspectSlot);
+        const imageUrl = getBgUrl(questionNumber, chosenAspectSlot);
         
         const bgFixed = document.getElementById('bgFixed');
         const bgBlur = document.getElementById('bgBlur');
@@ -776,7 +781,7 @@ try {
             bgBlur.style.backgroundImage = `url('${imageUrl}')`;
         }
 
-        preloadUpcomingPuzzles(aspectSlot, questionNumber + 1);
+        preloadUpcomingPuzzles(chosenAspectSlot, questionNumber + 1);
     }
 
     function transitionToNextPuzzle(currentPuzzleId, nextPuzzle, subtitleText, bgIndex) {
@@ -1082,8 +1087,10 @@ try {
     document.getElementById('mainTitle').addEventListener('click', function() {
         if (this.classList.contains('clickable')) {
             // Открываем puzzle4
+            const wrap3 = document.getElementById('wrap_puzzle3');
             const lock4 = document.getElementById('lock_puzzle4');
             const wrap4 = document.getElementById('wrap_puzzle4');
+            if (wrap3) wrap3.style.display = 'none';
             if (lock4) lock4.style.display = 'none';
             if (wrap4) {
                 wrap4.classList.add('reveal');
